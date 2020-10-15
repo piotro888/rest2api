@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"eu.piotro.test2api.api"},{"l":"eu.piotro.test2api.api.annotations"},{"l":"eu.piotro.test2api.http"},{"l":"eu.piotro.test2api.tcp"}]
