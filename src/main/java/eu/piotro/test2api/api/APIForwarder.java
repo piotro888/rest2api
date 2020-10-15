@@ -21,7 +21,7 @@ public class APIForwarder {
     public HTTPResponse forward(HTTPRequest request) throws HTTPException {
 
         List<MethodURIPair> uriMatched = map.keySet().stream() //FIXME: Breaks with regex
-                .filter(keyPair -> keyPair.getURI().matches(request.getURI()))
+                .filter(keyPair -> request.getURI().matches(keyPair.getURI()))
                 .collect(Collectors.toList());
 
         if(uriMatched.isEmpty())
