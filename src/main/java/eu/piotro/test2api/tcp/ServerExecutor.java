@@ -22,11 +22,13 @@ public class ServerExecutor implements Executor {
      * @param maxThreads Max number of threads allowed to run in parallel
      * @param minKeepThreads Number of threads ({@link Worker}) that are always kept, even when they are idle and independently of inactiveTimeout.
      * @param inactiveWorkerTimeout Time in seconds after which idle threads ({@link Worker}) above {@code minKeepThreads} limit would be stopped.
+     * @param maxQueueSize maximum number of waiting {@link Runnable}
      */
-    public ServerExecutor(int maxThreads, int minKeepThreads, int inactiveWorkerTimeout){
+    public ServerExecutor(int maxThreads, int minKeepThreads, int inactiveWorkerTimeout, int maxQueueSize){
         this.maxThreads = maxThreads;
         this.minKeepThreads = minKeepThreads;
         this.inactiveWorkerTimeout = inactiveWorkerTimeout;
+        this.maxQueueSize = maxQueueSize;
 
         taskQueue = new LinkedBlockingQueue<>();
         workers = new HashSet<>(maxThreads);
@@ -43,6 +45,8 @@ public class ServerExecutor implements Executor {
     public void execute(Runnable r) throws RejectedExecutionException {
         try {
             lock.lock();
+            if(taskQueue.size() >= maxQueueSize)
+                throw new RejectedExecutionException("Maximum size of queue reached");
             if (!taskQueue.offer(r))
                 throw new RejectedExecutionException("Cannot add to queue");
             adjustWorkers();
@@ -88,6 +92,7 @@ public class ServerExecutor implements Executor {
     private final int maxThreads;
     private final int minKeepThreads;
     private final int inactiveWorkerTimeout;
+    private final int maxQueueSize;
     private final Condition newTask;
     private int workerCnt = 0;
 
