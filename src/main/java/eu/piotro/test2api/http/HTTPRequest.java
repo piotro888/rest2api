@@ -2,7 +2,9 @@ package eu.piotro.test2api.http;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.net.Socket;
 import java.util.HashMap;
+import java.util.concurrent.*;
 
 /**
  * Represents HTTP request
@@ -12,10 +14,13 @@ public class HTTPRequest {
      * Creates new HTTP request (read via {@link #read()})
      * @param reader reader of inet socket
      */
-    public HTTPRequest(BufferedReader reader) {
+    public HTTPRequest(BufferedReader reader, Socket socket) {
         this.reader = reader;
         headersMap = new HashMap<>();
+        this.socket = socket;
     }
+
+    Socket socket;
 
     /**
      * Reads and parses HTTP requests
@@ -23,7 +28,12 @@ public class HTTPRequest {
      * @throws HTTPException if request is invalid (4xx HTTP errors)
      */
     public void read() throws IOException, HTTPException {
-        String requestLine = reader.readLine(); //TODO: TIMEOUT
+        setTimeout();
+
+        String requestLine = reader.readLine();
+
+        if(timeout)
+            throw new HTTPException(408, HTTPCodes.C408);
 
         if (requestLine == null)
             throw new IOException("No data sent to socket");
@@ -46,14 +56,19 @@ public class HTTPRequest {
             throw new HTTPException(400, HTTPCodes.C400);
 
         parseHeaders();
-        parseBody();
+        if(!timeout)
+            parseBody();
 
+        if(timeout)
+            throw new HTTPException(408, HTTPCodes.C408);
+
+        timeoutFuture.cancel(true);
     }
 
     private void parseHeaders() throws IOException, HTTPException {
         String line;
 
-        while ((line = reader.readLine()) == null || !line.isBlank()) {
+        while (!timeout && ((line = reader.readLine()) == null || !line.isBlank())) {
             if (line == null)
                 throw new IOException("Client closed while sending headers");
 
@@ -73,7 +88,7 @@ public class HTTPRequest {
         int contentLen = Integer.parseInt(headersMap.getOrDefault("Content-Length", "0"));
         final int BUFFER_SIZE = 1024;
         char[] buff = new char[BUFFER_SIZE];
-        while (contentLen > 0) {
+        while (!timeout && contentLen > 0) {
             int readLen = reader.read(buff, 0, Math.min(contentLen, BUFFER_SIZE));
             if (readLen == -1)
                 throw new IOException("Client closed before end of body");
@@ -82,6 +97,19 @@ public class HTTPRequest {
         }
 
         body = stringBuilder.toString();
+    }
+
+    private void setTimeout(){
+        timeoutFuture = timeoutService.schedule(() -> {
+            if(socket.isClosed())
+                return;
+            try {
+                socket.shutdownInput();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            timeout = true;
+        }, 5, TimeUnit.SECONDS);
     }
 
     public String getMethod() {
@@ -110,4 +138,7 @@ public class HTTPRequest {
     private String uri;
     private String body;
     private final HashMap<String, String> headersMap;
+    private final ScheduledExecutorService timeoutService = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledFuture<?> timeoutFuture;
+    private boolean timeout = false;
 }

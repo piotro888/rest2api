@@ -11,4 +11,5 @@ public interface HTTPCodes {
     String C411 = "Length Required";
     String C405 = "Method Not Allowed";
     String C500 = "Internal Server Error";
+    String C408 = "Request Timeout";
 }
