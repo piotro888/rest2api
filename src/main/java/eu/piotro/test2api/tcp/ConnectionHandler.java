@@ -24,7 +24,7 @@ public class ConnectionHandler implements Runnable {
         this.socket = socket;
         BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
-        request = new HTTPRequest(reader);
+        request = new HTTPRequest(reader, socket);
         this.apiForwarder = forwarder;
         if(forwarder.getHTTPExceptionHandler() != null)
             this.exceptionHandler = forwarder.getHTTPExceptionHandler();
