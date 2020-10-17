@@ -13,11 +13,15 @@ public class HTTPRequest {
     /**
      * Creates new HTTP request (read via {@link #read()})
      * @param reader reader of inet socket
+     * @param timeoutExecutor {@link ScheduledExecutorService} to schedule timeout events
+     * @param readTimeout time in milliseconds to timeout request reading
      */
-    public HTTPRequest(BufferedReader reader, Socket socket) {
+    public HTTPRequest(BufferedReader reader, Socket socket, ScheduledExecutorService timeoutExecutor, int readTimeout) {
         this.reader = reader;
         headersMap = new HashMap<>();
         this.socket = socket;
+        this.timeoutExecutor = timeoutExecutor;
+        this.readTimeout = readTimeout;
     }
 
     Socket socket;
@@ -100,7 +104,7 @@ public class HTTPRequest {
     }
 
     private void setTimeout(){
-        timeoutFuture = timeoutService.schedule(() -> {
+        timeoutFuture = timeoutExecutor.schedule(() -> {
             if(socket.isClosed())
                 return;
             try {
@@ -109,7 +113,7 @@ public class HTTPRequest {
                 e.printStackTrace();
             }
             timeout = true;
-        }, 5, TimeUnit.SECONDS);
+        }, readTimeout, TimeUnit.MILLISECONDS);
     }
 
     public String getMethod() {
@@ -138,7 +142,8 @@ public class HTTPRequest {
     private String uri;
     private String body;
     private final HashMap<String, String> headersMap;
-    private final ScheduledExecutorService timeoutService = Executors.newSingleThreadScheduledExecutor();
     private ScheduledFuture<?> timeoutFuture;
+    private final ScheduledExecutorService timeoutExecutor;
     private boolean timeout = false;
+    private final int readTimeout;
 }

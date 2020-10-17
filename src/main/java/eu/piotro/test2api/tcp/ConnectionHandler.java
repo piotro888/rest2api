@@ -2,6 +2,7 @@ package eu.piotro.test2api.tcp;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.concurrent.ScheduledExecutorService;
 
 import eu.piotro.test2api.api.APIForwarder;
 import eu.piotro.test2api.http.HTTPExceptionHandler;
@@ -19,12 +20,14 @@ public class ConnectionHandler implements Runnable {
      * Initializes handler. {@link #run()} must be called in order to process request.
      * @param socket {@link Socket} to handle
      * @param forwarder {@link APIForwarder} used to route HTTP requests
+     * @param timeoutExecutor {@link ScheduledExecutorService} to schedule connection timeouts
+     * @param readTimeout time in milliseconds to timeout request reading
      */
-    ConnectionHandler(Socket socket, APIForwarder forwarder) throws IOException {
+    ConnectionHandler(Socket socket, APIForwarder forwarder, ScheduledExecutorService timeoutExecutor, int readTimeout) throws IOException {
         this.socket = socket;
         BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
-        request = new HTTPRequest(reader, socket);
+        request = new HTTPRequest(reader, socket, timeoutExecutor, readTimeout);
         this.apiForwarder = forwarder;
         if(forwarder.getHTTPExceptionHandler() != null)
             this.exceptionHandler = forwarder.getHTTPExceptionHandler();
