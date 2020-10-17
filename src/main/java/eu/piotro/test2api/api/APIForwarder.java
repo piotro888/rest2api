@@ -20,7 +20,7 @@ public class APIForwarder {
      */
     public HTTPResponse forward(HTTPRequest request) throws HTTPException {
 
-        List<MethodURIPair> uriMatched = map.keySet().stream() //FIXME: Breaks with regex
+        List<MethodURIPair> uriMatched = map.keySet().stream()
                 .filter(keyPair -> request.getURI().matches(keyPair.getURI()))
                 .collect(Collectors.toList());
 
