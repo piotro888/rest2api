@@ -9,7 +9,6 @@ import java.util.concurrent.locks.ReentrantLock;
  * Custom {@link Executor} for socket server.
  *
  * @author Piotro
- * @version 2.1
  * @since 0.1
  */
 public class ServerExecutor implements Executor {
