@@ -23,6 +23,7 @@ public class ConnectionHandler implements Runnable {
      * @param forwarder {@link APIForwarder} used to route HTTP requests
      * @param timeoutExecutor {@link ScheduledExecutorService} to schedule connection timeouts
      * @param readTimeout time in milliseconds to timeout request reading
+     * @throws IOException if I/O error when creating socket reader or writer
      */
     ConnectionHandler(Socket socket, APIForwarder forwarder, ScheduledExecutorService timeoutExecutor, int readTimeout) throws IOException {
         this.socket = socket;

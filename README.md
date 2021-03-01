@@ -7,11 +7,13 @@ import eu.piotro.test2api.tcp.*;
 import eu.piotro.test2api.http.*;
 import eu.piotro.test2api.api.*;
 import eu.piotro.test2api.api.annotations.*;
+import java.io.IOException;
 
 public class REST {
-    public void run(){
+    public void run() throws IOException {
         APIForwarder forwarder = new APIForwarder();
-        forwarder.registerClass(REST.class);
+        forwarder.registerClassStatic(REST.class);
+        //or forwarder.registerClass(new REST()); with non-static methods
         int PORT = 1234;
         Server server = new Server(PORT, forwarder);
         while(true){
