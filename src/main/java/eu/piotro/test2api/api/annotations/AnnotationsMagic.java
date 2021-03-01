@@ -7,6 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 /**
  * Annotation processing
@@ -33,13 +34,13 @@ public class AnnotationsMagic {
                             try {
                                 return (HTTPResponse) method.invoke(classObject, request); //can cast because checked before that returns HTTPResponse. Obj may be null because method is static and don't matter from where we are calling it
                             } catch (IllegalAccessException e){
-                                e.printStackTrace();
+                                logger.severe("IllegalAccessException to " + method.getName() + ": " + e);
                                 throw new HTTPException(500, HTTPCodes.C500);
                             } catch (InvocationTargetException e){ //invoked method returned exception
                                 if (e.getTargetException() instanceof HTTPException){
                                     throw (HTTPException) e.getTargetException(); //pass HTTPException
                                 } else {
-                                    e.printStackTrace();
+                                    logger.severe("Handler method " + method.getName() + " threw exception " + e);
                                     throw new HTTPException(500, HTTPCodes.C500); //This should not happen
                                 }
                             }
@@ -64,4 +65,6 @@ public class AnnotationsMagic {
             throw new IllegalArgumentException("@RESTHandler method '" + method + "' must be accessible");
         }
     }
+
+    private static final Logger logger = Logger.getLogger(AnnotationsMagic.class.getName());
 }

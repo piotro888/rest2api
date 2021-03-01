@@ -110,9 +110,7 @@ public class HTTPRequest {
                 return;
             try {
                 socket.shutdownInput();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            } catch (IOException ignored) {}
             timeout = true;
         }, readTimeout, TimeUnit.MILLISECONDS);
     }
