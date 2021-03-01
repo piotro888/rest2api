@@ -51,7 +51,7 @@ public class APIForwarder {
 
 
     /**
-     * Registers annotated dynamic and static methods in class.
+     * Registers all annotated methods in class using class object.
      * @param classObject class object to register.
      * @see AnnotationsMagic#registerClass(Class, APIForwarder, Object)
      * @see eu.piotro.test2api.api.annotations
@@ -62,7 +62,7 @@ public class APIForwarder {
     }
 
     /**
-     * Registers annotated static methods in class.
+     * Registers annotated static methods in class using class reference.
      * @param classToRegister class to register.
      * @see APIForwarder#registerClass(Object) 
      * @see AnnotationsMagic#registerClass(Class, APIForwarder, Object)
