@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Logger;
 
 /**
  * Custom {@link Executor} for socket server.
@@ -51,7 +52,6 @@ public class ServerExecutor implements Executor {
                 throw new RejectedExecutionException("Cannot add to queue");
             adjustWorkers();
             newTask.signal();
-            System.out.println("Notified");
         } finally {
             lock.unlock();
         }
@@ -80,7 +80,7 @@ public class ServerExecutor implements Executor {
             }
 
             if(!idle){
-                System.out.println("Starting new Worker");
+                logger.fine("Starting new Worker " + "SEWorker"+workerCnt);
                 Worker newWorker = new Worker();
                 Thread workerThread = new Thread(newWorker, "SEWorker"+workerCnt++);
                 workerThread.start();
@@ -95,6 +95,7 @@ public class ServerExecutor implements Executor {
     private final int maxQueueSize;
     private final Condition newTask;
     private int workerCnt = 0;
+    private final Logger logger = Logger.getLogger(ServerExecutor.class.getName());
 
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
@@ -109,12 +110,12 @@ public class ServerExecutor implements Executor {
                     try {
                         lock.lock();
                         while (taskQueue.size() <= 0) {
-                            System.out.println("Awaiting");
-                            newTask.await(); //Fixes checking if newTask in main loop  (Consuming 100% CPU) now waiting for signal in addition to queue take
-                            System.out.println("Exiting await");
+                            logger.fine(Thread.currentThread().getName() + "awaiting");
+                            newTask.await(); //Fixes checking if newTask in main loop  (Consuming 100% CPU) now waiting for signal in addition to queue take. Await releases lock and waits to reacquire it after receiving signal
                         }
 
                         runningTask = taskQueue.take();
+                        logger.fine(Thread.currentThread().getName() + " executing task " + runningTask);
                     } finally {
                         lock.unlock();
                     }
@@ -128,7 +129,7 @@ public class ServerExecutor implements Executor {
                 }
             } catch (InterruptedException ignored){ }
             workers.remove(this);
-            System.out.println("Removed WORKER "+Thread.currentThread().getName());
+            logger.fine("Removed worker " + Thread.currentThread().getName() + ". " + workers.size() + " workers left");
         }
 
         private Runnable runningTask;
@@ -138,7 +139,6 @@ public class ServerExecutor implements Executor {
             @Override
             public void run() {
                 if(workers.size() > minKeepThreads) {
-                    System.out.println(Thread.currentThread().getName() + "Shutting down worker");
                     Worker.this.currentThread.interrupt();
                 }
             }
