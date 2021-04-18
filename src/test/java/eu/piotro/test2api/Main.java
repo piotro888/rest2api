@@ -12,7 +12,10 @@ public class Main {
     public static void main(String[] args){
         try {
             APIForwarder forwarder = new APIForwarder();
-            forwarder.registerClass(REST.class);
+            forwarder.registerClassStatic(REST.class);
+            RESTDynamic restClass = new RESTDynamic("Hello from non-static method");
+            forwarder.registerClass(restClass);
+
             Server server = new Server(PORT, forwarder);
             while(!Thread.currentThread().isInterrupted()){server.accept();}
         } catch (IOException e) {

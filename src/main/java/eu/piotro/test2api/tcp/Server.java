@@ -7,6 +7,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.concurrent.*;
+import java.util.logging.Logger;
 
 /**
  * Socket server for HTTP
@@ -39,6 +40,7 @@ public class Server {
         this.readTimeout = readTimeout;
         this.rateLimit = rateLimit;
         clearAndSchedule();
+        logger.info("Server created");
     }
 
     /**
@@ -57,15 +59,17 @@ public class Server {
     public void accept(){
         try {
             Socket acceptedSocket = serverSocket.accept();
-            System.out.println(acceptedSocket);
+            logger.fine(acceptedSocket + "accepted");
 
             if(!checkRateLimit(acceptedSocket))
                 return;
 
             executor.execute(new ConnectionHandler(acceptedSocket, forwarder, scheduledExecutor, readTimeout));
 
-        } catch (IOException e){
-            e.printStackTrace();
+        } catch(RejectedExecutionException e) {
+            logger.warning("Exception while adding connection to queue" + e);
+        } catch (IOException e) {
+            logger.info("Socket I/O exception" + e);
         }
     }
 
@@ -101,4 +105,5 @@ public class Server {
     private final int rateLimit;
     private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
     private final HashMap<String, Integer> rateLimitMap = new HashMap<>();
+    private static final Logger logger = Logger.getLogger(Server.class.getName());
 }

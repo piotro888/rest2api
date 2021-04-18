@@ -49,14 +49,27 @@ public class APIForwarder {
         map.put(new MethodURIPair(method, regex), handler);
     }
 
+
     /**
-     * Registers annotated methods in class.
+     * Registers all annotated methods in class using class object.
+     * @param classObject class object to register.
+     * @see AnnotationsMagic#registerClass(Class, APIForwarder, Object)
+     * @see eu.piotro.test2api.api.annotations
+     * @since 1.3
+     */
+    public void registerClass(Object classObject){
+        AnnotationsMagic.registerClass(classObject.getClass(), this, classObject);
+    }
+
+    /**
+     * Registers annotated static methods in class using class reference.
      * @param classToRegister class to register.
-     * @see AnnotationsMagic#registerClass(Class, APIForwarder)
+     * @see APIForwarder#registerClass(Object) 
+     * @see AnnotationsMagic#registerClass(Class, APIForwarder, Object)
      * @see eu.piotro.test2api.api.annotations
      */
-    public void registerClass(Class<?> classToRegister){
-        AnnotationsMagic.registerClass(classToRegister, this);
+    public void registerClassStatic(Class<?> classToRegister){
+        AnnotationsMagic.registerClass(classToRegister, this, null);
     }
 
     private final Map<MethodURIPair, APIHandler> map = new HashMap<>();

@@ -3,6 +3,7 @@ package eu.piotro.test2api.tcp;
 import java.io.*;
 import java.net.Socket;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.logging.Logger;
 
 import eu.piotro.test2api.api.APIForwarder;
 import eu.piotro.test2api.http.HTTPExceptionHandler;
@@ -22,6 +23,7 @@ public class ConnectionHandler implements Runnable {
      * @param forwarder {@link APIForwarder} used to route HTTP requests
      * @param timeoutExecutor {@link ScheduledExecutorService} to schedule connection timeouts
      * @param readTimeout time in milliseconds to timeout request reading
+     * @throws IOException if I/O error when creating socket reader or writer
      */
     ConnectionHandler(Socket socket, APIForwarder forwarder, ScheduledExecutorService timeoutExecutor, int readTimeout) throws IOException {
         this.socket = socket;
@@ -39,12 +41,12 @@ public class ConnectionHandler implements Runnable {
     @Override
     public void run() {
 
-        System.out.println("Received connection from " + socket);
+        logger.info("Processing connection " + socket);
 
-        try{
+        try {
             request.read();
-            System.out.println(request.getBody());
-            System.out.println(request.getHeaders());
+            logger.info(socket + " request: " +  request);
+            logger.fine("headers: " + request.getHeaders() + " body: " + request.getBody());
 
             HTTPResponse response = apiForwarder.forward(request);
             respond(response);
@@ -52,12 +54,10 @@ public class ConnectionHandler implements Runnable {
         } catch (HTTPException e){
             respond(exceptionHandler.handleHTTPException(e));
         } catch (IOException e){
-            e.printStackTrace();
+            logger.info(socket + " IOException " + e);
         } finally {
-            try{ socket.close(); } catch (IOException e) {e.printStackTrace();}
+            try{ socket.close(); } catch (IOException e) { logger.info(socket + " IOException when closing " + e); }
         }
-        System.out.println(request);
-        System.out.println("ConnEND");
     }
 
     private final Socket socket;
@@ -65,9 +65,13 @@ public class ConnectionHandler implements Runnable {
     private final HTTPRequest request;
     private final APIForwarder apiForwarder;
     private HTTPExceptionHandler exceptionHandler = new DefaultHTTPExceptionHandler();
+    private final Logger logger = Logger.getLogger(ConnectionHandler.class.getName());
 
     private void respond(HTTPResponse response){
-        System.out.println(socket + " " + response.getCode() + " " + response.getCodeDescription());
+        logger.info(socket + " " + response.getCode() + " " + response.getCodeDescription());
+        if(response.getCode() == 500)
+            logger.warning(socket + " 500 Status code returned");
+
         writer.println("HTTP/1.1 " + response.getCode() + " " + response.getCodeDescription());
         writer.println("Content-Type: " + response.getType());
         writer.println("Content-Length: " + response.getBody().length());
@@ -81,7 +85,6 @@ public class ConnectionHandler implements Runnable {
     private class DefaultHTTPExceptionHandler implements HTTPExceptionHandler {
         @Override
         public HTTPResponse handleHTTPException(HTTPException e){
-            System.out.println("HTTPException " + e + " " + socket);
             String errorHTTP = "<html>\n" +
                     "    <h2>API Error</h2>\n" +
                     "    <h3>" + e.getCode() + " " + e.getMessage() + "</h3>\n" +
