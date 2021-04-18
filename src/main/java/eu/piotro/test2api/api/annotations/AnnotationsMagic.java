@@ -40,7 +40,7 @@ public class AnnotationsMagic {
                                 if (e.getTargetException() instanceof HTTPException){
                                     throw (HTTPException) e.getTargetException(); //pass HTTPException
                                 } else {
-                                    logger.severe("Handler method " + method.getName() + " threw exception " + e);
+                                    logger.severe("Handler method " + method.getName() + " threw exception " + e.getTargetException());
                                     throw new HTTPException(500, HTTPCodes.C500); //This should not happen
                                 }
                             }
