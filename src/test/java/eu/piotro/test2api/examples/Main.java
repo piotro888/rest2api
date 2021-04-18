@@ -1,4 +1,4 @@
-package eu.piotro.test2api;
+package eu.piotro.test2api.examples;
 
 import eu.piotro.test2api.api.APIForwarder;
 import eu.piotro.test2api.tcp.Server;
