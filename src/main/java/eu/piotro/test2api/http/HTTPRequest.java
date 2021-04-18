@@ -13,6 +13,7 @@ public class HTTPRequest {
     /**
      * Creates new HTTP request (read via {@link #read()})
      * @param reader reader of inet socket
+     * @param socket {@link Socket} to read from
      * @param timeoutExecutor {@link ScheduledExecutorService} to schedule timeout events
      * @param readTimeout time in milliseconds to timeout request reading
      */
@@ -109,9 +110,7 @@ public class HTTPRequest {
                 return;
             try {
                 socket.shutdownInput();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            } catch (IOException ignored) {}
             timeout = true;
         }, readTimeout, TimeUnit.MILLISECONDS);
     }
