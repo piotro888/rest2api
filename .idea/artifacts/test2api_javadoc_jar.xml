@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" name="test2api-javadoc:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/test2api_javadoc_jar</output-path>
-    <root id="archive" name="test2api-javadoc_jar.jar">
-      <element id="dir-copy" path="$PROJECT_DIR$/out/javadoc" />
-    </root>
-  </artifact>
-</component>
