@@ -1,4 +1,4 @@
 /**
  * REST API server
  */
-package eu.piotro.test2api;
+package eu.piotro.rest2api;

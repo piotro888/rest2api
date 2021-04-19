@@ -1,10 +1,10 @@
-package eu.piotro.test2api;
+package eu.piotro.rest2api;
 
-import eu.piotro.test2api.api.annotations.RESTHandler;
-import eu.piotro.test2api.http.HTTPCodes;
-import eu.piotro.test2api.http.HTTPException;
-import eu.piotro.test2api.http.HTTPRequest;
-import eu.piotro.test2api.http.HTTPResponse;
+import eu.piotro.rest2api.api.annotations.RESTHandler;
+import eu.piotro.rest2api.http.HTTPCodes;
+import eu.piotro.rest2api.http.HTTPException;
+import eu.piotro.rest2api.http.HTTPRequest;
+import eu.piotro.rest2api.http.HTTPResponse;
 
 import java.io.IOException;
 

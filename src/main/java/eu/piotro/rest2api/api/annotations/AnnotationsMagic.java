@@ -1,7 +1,7 @@
-package eu.piotro.test2api.api.annotations;
+package eu.piotro.rest2api.api.annotations;
 
-import eu.piotro.test2api.api.*;
-import eu.piotro.test2api.http.*;
+import eu.piotro.rest2api.api.*;
+import eu.piotro.rest2api.http.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 
 /**
  * Annotation processing
- * @see eu.piotro.test2api.api.annotations
+ * @see eu.piotro.rest2api.api.annotations
  */
 public class AnnotationsMagic {
     /**

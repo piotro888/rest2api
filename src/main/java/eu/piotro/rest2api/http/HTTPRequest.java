@@ -1,4 +1,4 @@
-package eu.piotro.test2api.http;
+package eu.piotro.rest2api.http;
 
 import java.io.BufferedReader;
 import java.io.IOException;

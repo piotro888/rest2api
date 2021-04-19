@@ -1,4 +1,4 @@
-package eu.piotro.test2api.http;
+package eu.piotro.rest2api.http;
 
 /**
  * HTTP status codes descriptions
