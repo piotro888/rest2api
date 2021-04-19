@@ -1,6 +1,6 @@
-package eu.piotro.test2api.tcp;
+package eu.piotro.rest2api.tcp;
 
-import eu.piotro.test2api.api.APIForwarder;
+import eu.piotro.rest2api.api.APIForwarder;
 
 import java.io.IOException;
 import java.net.ServerSocket;

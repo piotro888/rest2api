@@ -1,10 +1,10 @@
-package eu.piotro.test2api.examples;
+package eu.piotro.rest2api.examples;
 
-import eu.piotro.test2api.api.APIHandler;
-import eu.piotro.test2api.api.annotations.RESTHandler;
-import eu.piotro.test2api.http.HTTPCodes;
-import eu.piotro.test2api.http.HTTPRequest;
-import eu.piotro.test2api.http.HTTPResponse;
+import eu.piotro.rest2api.api.APIHandler;
+import eu.piotro.rest2api.api.annotations.RESTHandler;
+import eu.piotro.rest2api.http.HTTPCodes;
+import eu.piotro.rest2api.http.HTTPRequest;
+import eu.piotro.rest2api.http.HTTPResponse;
 
 public class REST {
     @RESTHandler(method = "GET", URI = "/")

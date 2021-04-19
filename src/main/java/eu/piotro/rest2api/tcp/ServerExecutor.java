@@ -1,4 +1,4 @@
-package eu.piotro.test2api.tcp;
+package eu.piotro.rest2api.tcp;
 
 import java.util.HashSet;
 import java.util.concurrent.*;

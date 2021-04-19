@@ -1,14 +1,14 @@
-package eu.piotro.test2api.api;
+package eu.piotro.rest2api.api;
 
-import eu.piotro.test2api.api.annotations.AnnotationsMagic;
-import eu.piotro.test2api.http.*;
+import eu.piotro.rest2api.api.annotations.AnnotationsMagic;
+import eu.piotro.rest2api.http.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * Routes HTTP request to registered handlers
- * @see eu.piotro.test2api.api.annotations.RESTHandler
+ * @see eu.piotro.rest2api.api.annotations.RESTHandler
  * @since 1.0
  */
 public class APIForwarder {
@@ -54,7 +54,7 @@ public class APIForwarder {
      * Registers all annotated methods in class using class object.
      * @param classObject class object to register.
      * @see AnnotationsMagic#registerClass(Class, APIForwarder, Object)
-     * @see eu.piotro.test2api.api.annotations
+     * @see eu.piotro.rest2api.api.annotations
      * @since 1.3
      */
     public void registerClass(Object classObject){
@@ -66,7 +66,7 @@ public class APIForwarder {
      * @param classToRegister class to register.
      * @see APIForwarder#registerClass(Object) 
      * @see AnnotationsMagic#registerClass(Class, APIForwarder, Object)
-     * @see eu.piotro.test2api.api.annotations
+     * @see eu.piotro.rest2api.api.annotations
      */
     public void registerClassStatic(Class<?> classToRegister){
         AnnotationsMagic.registerClass(classToRegister, this, null);

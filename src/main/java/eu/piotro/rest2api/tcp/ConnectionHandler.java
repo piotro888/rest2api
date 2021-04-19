@@ -1,15 +1,15 @@
-package eu.piotro.test2api.tcp;
+package eu.piotro.rest2api.tcp;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Logger;
 
-import eu.piotro.test2api.api.APIForwarder;
-import eu.piotro.test2api.http.HTTPExceptionHandler;
-import eu.piotro.test2api.http.HTTPResponse;
-import eu.piotro.test2api.http.HTTPException;
-import eu.piotro.test2api.http.HTTPRequest;
+import eu.piotro.rest2api.api.APIForwarder;
+import eu.piotro.rest2api.http.HTTPExceptionHandler;
+import eu.piotro.rest2api.http.HTTPResponse;
+import eu.piotro.rest2api.http.HTTPException;
+import eu.piotro.rest2api.http.HTTPRequest;
 
 /**
  * Handles HTTP Socket connections

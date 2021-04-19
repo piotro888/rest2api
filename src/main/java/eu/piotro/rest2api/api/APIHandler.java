@@ -1,6 +1,6 @@
-package eu.piotro.test2api.api;
+package eu.piotro.rest2api.api;
 
-import eu.piotro.test2api.http.*;
+import eu.piotro.rest2api.http.*;
 
 /**
  * API Handler interface for registering handlers

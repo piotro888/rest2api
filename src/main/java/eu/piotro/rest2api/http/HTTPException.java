@@ -1,4 +1,4 @@
-package eu.piotro.test2api.http;
+package eu.piotro.rest2api.http;
 
 /**
  * Represents HTTP error response with status code, message and optionally headers, which may be thrown as Exception
