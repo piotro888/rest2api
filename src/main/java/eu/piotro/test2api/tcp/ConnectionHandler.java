@@ -72,13 +72,13 @@ public class ConnectionHandler implements Runnable {
         if(response.getCode() == 500)
             logger.warning(socket + " 500 Status code returned");
 
-        writer.println("HTTP/1.1 " + response.getCode() + " " + response.getCodeDescription());
-        writer.println("Content-Type: " + response.getType());
-        writer.println("Content-Length: " + response.getBody().length());
+        writer.print("HTTP/1.1 " + response.getCode() + " " + response.getCodeDescription() + "\r\n");
+        writer.print("Content-Type: " + response.getType() + "\r\n");
+        writer.print("Content-Length: " + response.getBody().length() + "\r\n");
         if(!response.getHeaders().isEmpty())
-            writer.println(response.getHeaders());
+            writer.print(response.getHeaders() + "\r\n");
         writer.print("\r\n");
-        writer.println(response.getBody());
+        writer.print(response.getBody() + "\r\n");
         writer.flush();
     }
 
