@@ -75,6 +75,7 @@ public class ConnectionHandler implements Runnable {
         writer.print("HTTP/1.1 " + response.getCode() + " " + response.getCodeDescription() + "\r\n");
         writer.print("Content-Type: " + response.getType() + "\r\n");
         writer.print("Content-Length: " + response.getBody().length() + "\r\n");
+        writer.print("Connection: close" + "\r\n");
         if(!response.getHeaders().isEmpty())
             writer.print(response.getHeaders() + "\r\n");
         writer.print("\r\n");
