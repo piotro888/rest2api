@@ -83,13 +83,13 @@ public class ConnectionHandler implements Runnable {
         writer.flush();
     }
 
-    private class DefaultHTTPExceptionHandler implements HTTPExceptionHandler {
+    private static class DefaultHTTPExceptionHandler implements HTTPExceptionHandler {
         @Override
         public HTTPResponse handleHTTPException(HTTPException e){
             String errorHTTP = "<html>\n" +
                     "    <h2>API Error</h2>\n" +
                     "    <h3>" + e.getCode() + " " + e.getMessage() + "</h3>\n" +
-                    "    <hr> Test2API Server\n" +
+                    "    <hr> Rest2API Server\n" +
                     "</html>\r\n";
             return new HTTPResponse(e.getCode(), e.getMessage(), "text/html", e.getHeaders(), errorHTTP);
         }
