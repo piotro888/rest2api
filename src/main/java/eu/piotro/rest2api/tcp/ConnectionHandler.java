@@ -72,23 +72,24 @@ public class ConnectionHandler implements Runnable {
         if(response.getCode() == 500)
             logger.warning(socket + " 500 Status code returned");
 
-        writer.println("HTTP/1.1 " + response.getCode() + " " + response.getCodeDescription());
-        writer.println("Content-Type: " + response.getType());
-        writer.println("Content-Length: " + response.getBody().length());
+        writer.print("HTTP/1.1 " + response.getCode() + " " + response.getCodeDescription() + "\r\n");
+        writer.print("Content-Type: " + response.getType() + "\r\n");
+        writer.print("Content-Length: " + response.getBody().length() + "\r\n");
+        writer.print("Connection: close" + "\r\n");
         if(!response.getHeaders().isEmpty())
-            writer.println(response.getHeaders());
+            writer.print(response.getHeaders() + "\r\n");
         writer.print("\r\n");
-        writer.println(response.getBody());
+        writer.print(response.getBody() + "\r\n");
         writer.flush();
     }
 
-    private class DefaultHTTPExceptionHandler implements HTTPExceptionHandler {
+    private static class DefaultHTTPExceptionHandler implements HTTPExceptionHandler {
         @Override
         public HTTPResponse handleHTTPException(HTTPException e){
             String errorHTTP = "<html>\n" +
                     "    <h2>API Error</h2>\n" +
                     "    <h3>" + e.getCode() + " " + e.getMessage() + "</h3>\n" +
-                    "    <hr> Test2API Server\n" +
+                    "    <hr> Rest2API Server\n" +
                     "</html>\r\n";
             return new HTTPResponse(e.getCode(), e.getMessage(), "text/html", e.getHeaders(), errorHTTP);
         }
