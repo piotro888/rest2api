@@ -1,12 +1,12 @@
-# Test2API
+# Rest2API
 Simple and minimalistic REST API Server written in Java
 
 ### Usage example
 ```java
-import eu.piotro.test2api.tcp.*;
-import eu.piotro.test2api.http.*;
-import eu.piotro.test2api.api.*;
-import eu.piotro.test2api.api.annotations.*;
+import eu.piotro.rest2api.tcp.*;
+import eu.piotro.rest2api.http.*;
+import eu.piotro.rest2api.api.*;
+import eu.piotro.rest2api.api.annotations.*;
 import java.io.IOException;
 
 public class REST {
