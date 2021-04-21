@@ -1,9 +1,13 @@
 # Rest2API
-Light-weight Java server for REST APIs
+
+![Maven Central](https://img.shields.io/maven-central/v/eu.piotro/rest2api)
+[![Java CI Gradle](https://github.com/piotro888/rest2api/actions/workflows/gradle.yml/badge.svg?branch=master)](https://github.com/piotro888/rest2api/actions/workflows/gradle.yml)
+
+Lightweight Java server for REST APIs
 
 ## Features
 - Easy to use with `@RestHandler` annotation
-- Light-weight, with no external dependencies
+- Lightweight, with no external dependencies
 - Universal - your handler methods assigned to URIs receive `HttpRequest` and return `HttpResponse`
 - Simple and fast, provides basic HTTP functionalities to run a REST (or other API over HTTP) application
 - Endpoint URIs supports regex and all HTTP methods.
@@ -72,9 +76,9 @@ Build via `./gradlew build`
 - SSL/TLS (for now you can use proxy)
 
 ## License
-Licensed under MIT License 
+Licensed under [MIT License](https://github.com/piotro888/rest2api/LICENSE)
 
 rest2api by Piotr Wegrzyn
 
 ---
-*Thanks for using or contributing*
+*Thanks for using/contributing*
