@@ -33,7 +33,8 @@ public class HTTPRequest {
      * @throws HTTPException if request is invalid (4xx HTTP errors)
      */
     public void read() throws IOException, HTTPException {
-        setTimeout();
+        if(timeout)
+            throw new HTTPException(408, HTTPCodes.C408);
 
         String requestLine = reader.readLine();
 
@@ -66,14 +67,14 @@ public class HTTPRequest {
 
         if(timeout)
             throw new HTTPException(408, HTTPCodes.C408);
-
-        timeoutFuture.cancel(true);
     }
 
     private void parseHeaders() throws IOException, HTTPException {
         String line;
 
         while (!timeout && ((line = reader.readLine()) == null || !line.isBlank())) {
+            if(timeout)
+                break;
             if (line == null)
                 throw new IOException("Client closed while sending headers");
 
@@ -95,6 +96,8 @@ public class HTTPRequest {
         char[] buff = new char[BUFFER_SIZE];
         while (!timeout && contentLen > 0) {
             int readLen = reader.read(buff, 0, Math.min(contentLen, BUFFER_SIZE));
+            if(timeout)
+                break;
             if (readLen == -1)
                 throw new IOException("Client closed before end of body");
             contentLen -= readLen;
@@ -104,7 +107,10 @@ public class HTTPRequest {
         body = stringBuilder.toString();
     }
 
-    private void setTimeout(){
+    /**
+     * Schedule timeout event for connection checked by {@link #read()}
+     */
+    public void setTimeout() {
         timeoutFuture = timeoutExecutor.schedule(() -> {
             if(socket.isClosed())
                 return;
@@ -113,6 +119,14 @@ public class HTTPRequest {
             } catch (IOException ignored) {}
             timeout = true;
         }, readTimeout, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Cancel scheduled timeout event
+     */
+    public void cancelTimeout() {
+        if(timeoutFuture != null)
+            timeoutFuture.cancel(true);
     }
 
     public String getMethod() {

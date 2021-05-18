@@ -72,6 +72,38 @@ public class ServerTest {
         BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         Thread.sleep(200);
         assertEquals(reader.readLine(), "HTTP/1.1 408 Request Timeout");
+        assertEquals(reader.readLine(), "Connection: close");
+        socket.close();
+    }
+
+    @Test
+    public void testKeepAlive() throws Exception {
+        Socket socket = new Socket("localhost", 1234);
+        PrintWriter writer = new PrintWriter(socket.getOutputStream());
+        BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        writer.write("GET / HTTP/1.1\n\nGET / HTTP/1.1\n\n");
+        writer.flush();
+        int httpOkCnt = 0;
+        while (httpOkCnt < 2) {
+            String line = reader.readLine();
+            if (line.equals("HTTP/1.1 200 OK"))
+                httpOkCnt++;
+            else if(line.startsWith("HTTP/1.1"))
+                fail();
+        }
+        assertEquals(httpOkCnt, 2);
+    }
+
+    @Test
+    public void testConnectionClose() throws Exception {
+        Socket socket = new Socket("localhost", 1234);
+        PrintWriter writer = new PrintWriter(socket.getOutputStream());
+        writer.write("GET / HTTP/1.1\nConnection: close\n\n");
+        writer.flush();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        assertEquals(reader.readLine(), "HTTP/1.1 200 OK");
+        assertEquals(reader.readLine(), "Connection: close");
+        socket.close();
     }
 
     @Test

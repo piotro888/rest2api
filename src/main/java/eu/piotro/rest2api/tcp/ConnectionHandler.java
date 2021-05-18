@@ -40,23 +40,38 @@ public class ConnectionHandler implements Runnable {
      */
     @Override
     public void run() {
-
         logger.info("Processing connection " + socket);
-
+        request.setTimeout();
         try {
-            request.read();
-            logger.info(socket + " request: " +  request);
-            logger.fine("headers: " + request.getHeaders() + " body: " + request.getBody());
+            while (true) {
+                try {
+                    request.read();
+                    logger.info(socket + " request: " + request);
+                    logger.fine("headers: " + request.getHeaders() + " body: " + request.getBody());
 
-            HTTPResponse response = apiForwarder.forward(request);
-            respond(response);
+                    HTTPResponse response = apiForwarder.forward(request);
 
-        } catch (HTTPException e){
-            respond(exceptionHandler.handleHTTPException(e));
+                    if(request.getHeaders().get("Connection") != null && request.getHeaders().get("Connection").equalsIgnoreCase("close")
+                      || request.getHeaders().get("connection") != null && request.getHeaders().get("connection").equalsIgnoreCase("close")) {
+                        respond(response, true);
+                        break;
+                    }
+                    else
+                        respond(response, false);
+
+                } catch (HTTPException e){
+                    if(e.getCode() == 408) {
+                        respond(exceptionHandler.handleHTTPException(e), true);
+                        break;
+                    }
+                    respond(exceptionHandler.handleHTTPException(e), false);
+                }
+            }
         } catch (IOException e){
             logger.info(socket + " IOException " + e);
         } finally {
             try{ socket.close(); } catch (IOException e) { logger.info(socket + " IOException when closing " + e); }
+            request.cancelTimeout();
         }
     }
 
@@ -67,15 +82,19 @@ public class ConnectionHandler implements Runnable {
     private HTTPExceptionHandler exceptionHandler = new DefaultHTTPExceptionHandler();
     private final Logger logger = Logger.getLogger(ConnectionHandler.class.getName());
 
-    private void respond(HTTPResponse response){
+    private void respond(HTTPResponse response, boolean close){
         logger.info(socket + " " + response.getCode() + " " + response.getCodeDescription());
         if(response.getCode() == 500)
             logger.warning(socket + " 500 Status code returned");
 
         writer.print("HTTP/1.1 " + response.getCode() + " " + response.getCodeDescription() + "\r\n");
+        if(close)
+            writer.print("Connection: close" + "\r\n");
+        else
+            writer.print("Connection: keep-alive" + "\r\n");
         writer.print("Content-Type: " + response.getType() + "\r\n");
         writer.print("Content-Length: " + response.getBody().length() + "\r\n");
-        writer.print("Connection: close" + "\r\n");
+        writer.print("Server: rest2api" + "\r\n");
         if(!response.getHeaders().isEmpty())
             writer.print(response.getHeaders() + "\r\n");
         writer.print("\r\n");
