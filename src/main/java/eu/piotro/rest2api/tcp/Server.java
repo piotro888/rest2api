@@ -19,7 +19,6 @@ public class Server {
     private static final int defaultInactiveWorkerTimeout = 10;
     private static final int defaultReadTimeout = 5000;
     private static final int defaultMaxQueueSize = 100;
-    private static final int defaultRateLimit = 10;
 
     /**
      * Create server with custom parameters
@@ -30,16 +29,13 @@ public class Server {
      * @param inactiveWorkerTimeout time in seconds to keep inactive handlers over minimum limit
      * @param readTimeout time in milliseconds to timeout request reading
      * @param maxQueueSize maximum number of waiting connections
-     * @param rateLimit maximum number of connections from one IP address per second
      * @throws IOException if I/O error when creating ServerSocket ex. cannot bind to port
      */
-    public Server (int port, APIForwarder forwarder, int maxThreads, int minKeepThreads, int inactiveWorkerTimeout, int readTimeout, int maxQueueSize, int rateLimit) throws IOException {
+    public Server (int port, APIForwarder forwarder, int maxThreads, int minKeepThreads, int inactiveWorkerTimeout, int readTimeout, int maxQueueSize) throws IOException {
         serverSocket = new ServerSocket(port);
         executor = new ServerExecutor(maxThreads, minKeepThreads, inactiveWorkerTimeout, maxQueueSize);
         this.forwarder = forwarder;
         this.readTimeout = readTimeout;
-        this.rateLimit = rateLimit;
-        clearAndSchedule();
         logger.info("Server created");
     }
 
@@ -50,7 +46,7 @@ public class Server {
      * @throws IOException if I/O error when creating ServerSocket ex. cannot bind to port
      */
     public Server (int port, APIForwarder forwarder) throws IOException {
-        this(port, forwarder, defaultMaxThreads, defaultMinKeepThreads, defaultInactiveWorkerTimeout, defaultReadTimeout, defaultMaxQueueSize, defaultRateLimit);
+        this(port, forwarder, defaultMaxThreads, defaultMinKeepThreads, defaultInactiveWorkerTimeout, defaultReadTimeout, defaultMaxQueueSize);
     }
 
     /**
@@ -61,9 +57,6 @@ public class Server {
             Socket acceptedSocket = serverSocket.accept();
             logger.fine(acceptedSocket + "accepted");
 
-            if(!checkRateLimit(acceptedSocket))
-                return;
-
             executor.execute(new ConnectionHandler(acceptedSocket, forwarder, scheduledExecutor, readTimeout));
 
         } catch(RejectedExecutionException e) {
@@ -73,36 +66,10 @@ public class Server {
         }
     }
 
-    private boolean checkRateLimit(Socket socket){
-        String ip = socket.getInetAddress().getHostAddress();
-        if(rateLimitMap.containsKey(ip)){
-            int cnt = rateLimitMap.get(ip);
-            if(cnt > rateLimit){
-                try {
-                    String response = "HTTP/1.1 429 Too Many Requests\r\nContent-Length: 0\r\n\r\n";
-                    socket.getOutputStream().write(response.getBytes(), 0, response.length());
-                    socket.getOutputStream().flush();
-                    socket.close();
-                } catch (IOException ignored) {}
-                return false;
-            }
-            rateLimitMap.replace(ip, cnt, cnt+1);
-        } else {
-            rateLimitMap.put(ip, 1);
-        }
-        return true;
-    }
-
-    private void clearAndSchedule(){
-        rateLimitMap.clear();
-        scheduledExecutor.schedule(this::clearAndSchedule, 1, TimeUnit.SECONDS);
-    }
-
     private final Executor executor;
     private final ServerSocket serverSocket;
     private final APIForwarder forwarder;
     private final int readTimeout;
-    private final int rateLimit;
     private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
     private final HashMap<String, Integer> rateLimitMap = new HashMap<>();
     private static final Logger logger = Logger.getLogger(Server.class.getName());

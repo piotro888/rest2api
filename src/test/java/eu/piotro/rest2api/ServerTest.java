@@ -21,7 +21,7 @@ public class ServerTest {
         forwarder.registerClassStatic(TestHandlersStatic.class);
         forwarder.registerClass(new TestHandlers());
 
-        Server server = new Server(1234, forwarder, 2, 1, 100, 100, 100, 16);
+        Server server = new Server(1234, forwarder, 2, 1, 100, 100, 100);
         serverThread = new Thread(()->{
             while (!Thread.currentThread().isInterrupted()) {
                 server.accept();
@@ -114,22 +114,6 @@ public class ServerTest {
 
         HttpResponse<String> httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
         assertEquals(httpResponse.statusCode(), 404);
-    }
-
-    @Test
-    public void rateLimitTest() throws Exception {
-        for(int i=0; i<32; i++) {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:1234/"))
-                    .build();
-            HttpResponse<String> httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
-            if(httpResponse.statusCode() == 429) {
-                Thread.sleep(1000);
-                return;
-            }
-        }
-        fail();
-        Thread.sleep(1000);
     }
 
     @Test
