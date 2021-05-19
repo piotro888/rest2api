@@ -95,7 +95,8 @@ public class ConnectionHandler implements Runnable {
         if(!response.getHeaders().isEmpty())
             writer.print(response.getHeaders() + "\r\n");
         writer.print("\r\n");
-        writer.print(response.getBody() + "\r\n");
+        if(response.getBody() != null)
+            writer.print(response.getBody() + "\r\n");
         writer.flush();
     }
 
