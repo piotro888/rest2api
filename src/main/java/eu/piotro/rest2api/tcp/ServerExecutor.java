@@ -2,6 +2,7 @@ package eu.piotro.rest2api.tcp;
 
 import java.util.HashSet;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
@@ -70,22 +71,12 @@ public class ServerExecutor implements Executor {
 //    }
 
     private void adjustWorkers(){
-        if(taskQueue.size() > 0 && workers.size() < maxThreads){
-            boolean idle = false;
-            for(Worker w: workers){
-                if(w.runningTask == null){
-                    idle = true;
-                    break;
-                }
-            }
-
-            if(!idle){
-                logger.fine("Starting new Worker " + "SEWorker"+workerCnt);
-                Worker newWorker = new Worker();
-                Thread workerThread = new Thread(newWorker, "SEWorker"+workerCnt++);
-                workerThread.start();
-                workers.add(newWorker);
-            }
+        if(runningWorkersCnt.get() == workers.size() && workers.size() < maxThreads){
+            logger.fine("Starting new Worker " + "SEWorker"+workerId);
+            Worker newWorker = new Worker();
+            Thread workerThread = new Thread(newWorker, "SEWorker"+workerId++);
+            workerThread.start();
+            workers.add(newWorker);
         }
     }
 
@@ -94,7 +85,8 @@ public class ServerExecutor implements Executor {
     private final int inactiveWorkerTimeout;
     private final int maxQueueSize;
     private final Condition newTask;
-    private int workerCnt = 0;
+    private int workerId = 0;
+    private final AtomicInteger runningWorkersCnt = new AtomicInteger(0);
     private final Logger logger = Logger.getLogger(ServerExecutor.class.getName());
 
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
@@ -110,7 +102,7 @@ public class ServerExecutor implements Executor {
                     try {
                         lock.lock();
                         while (taskQueue.size() <= 0) {
-                            logger.fine(Thread.currentThread().getName() + "awaiting");
+                            logger.fine(Thread.currentThread().getName() + "awaiting" + runningWorkersCnt);
                             newTask.await(); //Fixes checking if newTask in main loop  (Consuming 100% CPU) now waiting for signal in addition to queue take. Await releases lock and waits to reacquire it after receiving signal
                         }
 
@@ -121,9 +113,12 @@ public class ServerExecutor implements Executor {
                     }
 
                     if (runningTask != null) {
+                        runningWorkersCnt.incrementAndGet();
                         inactiveTimeoutTask.cancel(false);
                         runningTask.run();
                         inactiveTimeoutTask = scheduledExecutorService.schedule(new InactiveTimeoutRunnable(), inactiveWorkerTimeout, TimeUnit.SECONDS);
+                        runningWorkersCnt.decrementAndGet();
+
                     }
                     runningTask = null;
                 }
