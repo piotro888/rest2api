@@ -6,10 +6,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Logger;
 
 import eu.piotro.rest2api.api.APIForwarder;
-import eu.piotro.rest2api.http.HTTPExceptionHandler;
-import eu.piotro.rest2api.http.HTTPResponse;
-import eu.piotro.rest2api.http.HTTPException;
-import eu.piotro.rest2api.http.HTTPRequest;
+import eu.piotro.rest2api.http.*;
 
 /**
  * Handles HTTP Socket connections
@@ -27,9 +24,9 @@ public class ConnectionHandler implements Runnable {
      */
     ConnectionHandler(Socket socket, APIForwarder forwarder, ScheduledExecutorService timeoutExecutor, int readTimeout) throws IOException {
         this.socket = socket;
-        BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        BufferedReader breader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
-        request = new HTTPRequest(reader, socket, timeoutExecutor, readTimeout);
+        reader = new HTTPReader(breader, socket, timeoutExecutor, readTimeout);
         this.apiForwarder = forwarder;
         if(forwarder.getHTTPExceptionHandler() != null)
             this.exceptionHandler = forwarder.getHTTPExceptionHandler();
@@ -41,11 +38,11 @@ public class ConnectionHandler implements Runnable {
     @Override
     public void run() {
         logger.info("Processing connection " + socket);
-        request.setTimeout();
+        reader.setTimeout();
         try {
             while (true) {
                 try {
-                    request.read();
+                    HTTPRequest request = reader.read();
                     logger.info(socket + " request: " + request);
                     logger.fine("headers: " + request.getHeaders() + " body: " + request.getBody());
 
@@ -71,13 +68,13 @@ public class ConnectionHandler implements Runnable {
             logger.info(socket + " IOException " + e);
         } finally {
             try{ socket.close(); } catch (IOException e) { logger.info(socket + " IOException when closing " + e); }
-            request.cancelTimeout();
+            reader.cancelTimeout();
         }
     }
 
     private final Socket socket;
     private final PrintWriter writer;
-    private final HTTPRequest request;
+    private final HTTPReader reader;
     private final APIForwarder apiForwarder;
     private HTTPExceptionHandler exceptionHandler = new DefaultHTTPExceptionHandler();
     private final Logger logger = Logger.getLogger(ConnectionHandler.class.getName());
