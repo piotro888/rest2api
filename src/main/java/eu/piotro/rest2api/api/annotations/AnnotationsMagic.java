@@ -61,7 +61,8 @@ public class AnnotationsMagic {
         if(classObject == null && !Modifier.isStatic(method.getModifiers())){ // classObject == null - only static methods are valid
             throw new IllegalArgumentException("@RESTHandler method '" + method + "' must be static");
         }
-        if(!method.canAccess(classObject)){
+        if((!Modifier.isStatic(method.getModifiers()) && !method.canAccess(classObject))
+            || Modifier.isStatic(method.getModifiers()) && !method.canAccess(null)){
             throw new IllegalArgumentException("@RESTHandler method '" + method + "' must be accessible");
         }
     }

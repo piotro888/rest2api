@@ -52,4 +52,9 @@ public class TestHandlers {
         throw new HTTPException(499, "499");
     }
 
+    @RESTHandler(method = "GET", URI = "/")
+    public static HTTPResponse staticRegisterCheck(HTTPRequest r) throws HTTPException {
+        return new HTTPResponse(200, HTTPCodes.C200, "text/plain", "");
+    }
+
 }
