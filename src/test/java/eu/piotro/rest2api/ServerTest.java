@@ -201,6 +201,17 @@ public class ServerTest {
         assertEquals(httpResponse.statusCode(), 499);
     }
 
+    @Test
+    public void testUTF8() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:1234/utf"))
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        assertEquals(response.statusCode(), 200);
+        System.out.println(response.body());
+        assertEquals(response.body(), ".ą.");
+    }
+
     private static Thread serverThread;
     private static HttpClient client;
 }

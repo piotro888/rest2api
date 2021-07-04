@@ -2,6 +2,7 @@ package eu.piotro.rest2api.tcp;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Logger;
 
@@ -25,7 +26,7 @@ public class ConnectionHandler implements Runnable {
     ConnectionHandler(Socket socket, APIForwarder forwarder, ScheduledExecutorService timeoutExecutor, int readTimeout) throws IOException {
         this.socket = socket;
         BufferedReader breader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
+        bufferedOutput = new BufferedOutputStream(socket.getOutputStream());
         reader = new HTTPReader(breader, socket, timeoutExecutor, readTimeout);
         this.apiForwarder = forwarder;
         if(forwarder.getHTTPExceptionHandler() != null)
@@ -73,31 +74,30 @@ public class ConnectionHandler implements Runnable {
     }
 
     private final Socket socket;
-    private final PrintWriter writer;
+    private final BufferedOutputStream bufferedOutput;
     private final HTTPReader reader;
     private final APIForwarder apiForwarder;
     private HTTPExceptionHandler exceptionHandler = new DefaultHTTPExceptionHandler();
     private final Logger logger = Logger.getLogger(ConnectionHandler.class.getName());
 
-    private void respond(HTTPResponse response, boolean close){
+    private void respond(HTTPResponse response, boolean close) throws IOException{
         logger.info(socket + " " + response.getCode() + " " + response.getCodeDescription());
         if(response.getCode() == 500)
             logger.warning(socket + " 500 Status code returned");
 
-        writer.print("HTTP/1.1 " + response.getCode() + " " + response.getCodeDescription() + "\r\n");
-        if(close)
-            writer.print("Connection: close" + "\r\n");
-        else
-            writer.print("Connection: keep-alive" + "\r\n");
-        writer.print("Content-Type: " + response.getType() + "\r\n");
-        writer.print("Content-Length: " + response.getBody().length() + "\r\n");
-        writer.print("Server: rest2api" + "\r\n");
-        if(!response.getHeaders().isEmpty())
-            writer.print(response.getHeaders() + "\r\n");
-        writer.print("\r\n");
-        if(response.getBody() != null)
-            writer.print(response.getBody() + "\r\n");
-        writer.flush();
+        String HTTPHeaders = "HTTP/1.1 " + response.getCode() + " " + response.getCodeDescription() + "\r\n" +
+                             (close ? "Connection: close" : "Connection: keep-alive") + "\r\n" +
+                             "Content-Type: " + response.getType() + "\r\n" +
+                             "Content-Length: " + response.getBody().length + "\r\n" +
+                             "Server: rest2api" + "\r\n" +
+                             (response.getHeaders() == null || response.getHeaders().isEmpty() ? "" : response.getHeaders() + "\r\n") +
+                             "\r\n";
+
+        bufferedOutput.write(HTTPHeaders.getBytes(StandardCharsets.ISO_8859_1));
+        if (response.getBody() != null)
+            bufferedOutput.write(response.getBody());
+        bufferedOutput.write("\r\n".getBytes(StandardCharsets.ISO_8859_1));
+        bufferedOutput.flush();
     }
 
     private static class DefaultHTTPExceptionHandler implements HTTPExceptionHandler {
@@ -108,7 +108,7 @@ public class ConnectionHandler implements Runnable {
                     "    <h3>" + e.getCode() + " " + e.getMessage() + "</h3>\n" +
                     "    <hr> Rest2API Server\n" +
                     "</html>\r\n";
-            return new HTTPResponse(e.getCode(), e.getMessage(), "text/html", e.getHeaders(), errorHTTP);
+            return new HTTPResponse(e.getCode(), e.getMessage(), "text/html", e.getHeaders(), errorHTTP, StandardCharsets.ISO_8859_1);
         }
     }
 }
